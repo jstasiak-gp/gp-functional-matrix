@@ -1,6 +1,10 @@
 # ── Artefakty budowane (regenerowalne z dane/ + generator/) ──
 site/
 
+# ── Artefakty kroków CI (przy uruchomieniu lokalnie) ──
+site-kontrolny*/
+strona.html
+
 # ── Python ──
 **/__pycache__/
 *.pyc

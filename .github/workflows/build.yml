@@ -1,0 +1,104 @@
+name: Walidacja macierzy i build strony
+
+# Bramka jakości: zmiana danych lub generatora uruchamia walidację KAŻDEJ macierzy,
+# a następnie build strony i obrazu. Błąd walidacji = czerwony pipeline, brak publikacji.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dane/**'
+      - 'generator/**'
+      - 'nginx/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'requirements.txt'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - 'dane/**'
+      - 'generator/**'
+      - 'nginx/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'requirements.txt'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  walidacja-i-strona:
+    name: Walidacja macierzy + generacja strony
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Zainstaluj zależności
+        run: pip install -r requirements.txt
+
+      - name: Walidacja macierzy (bramka) + generacja strony
+        run: python generator/build.py --dane ./dane --out ./site
+
+      - name: Sprawdź, czy wynik powstał
+        run: |
+          test -s site/index.html || { echo "Brak site/index.html"; exit 1; }
+          test -s site/combined.json || { echo "Brak site/combined.json"; exit 1; }
+          python -c "import json; json.load(open('site/combined.json', encoding='utf-8'))"
+          echo "index.html: $(wc -c < site/index.html) B, combined.json: $(wc -c < site/combined.json) B"
+
+      - name: Sprawdź determinizm buildu (dwa przebiegi = identyczny wynik)
+        run: |
+          python generator/build.py --dane ./dane --out ./site-kontrolny --wersja 2000-01-01 > /dev/null
+          python generator/build.py --dane ./dane --out ./site-kontrolny2 --wersja 2000-01-01 > /dev/null
+          diff -r ./site-kontrolny ./site-kontrolny2
+          echo "Build deterministyczny: OK"
+
+      - name: Zapisz stronę jako artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site/
+          retention-days: 14
+
+  obraz:
+    name: Build obrazu Docker + smoke test
+    needs: walidacja-i-strona
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Zbuduj obraz
+        run: docker build -t imap-macierze:ci .
+
+      - name: Smoke test — uruchom i sprawdź, czy strona odpowiada
+        run: |
+          docker run -d --name ci-test -p 8080:8080 imap-macierze:ci
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://localhost:8080/; then echo "Serwer odpowiada"; break; fi
+            sleep 2
+          done
+          curl -fsS -o /dev/null -w 'strona:        HTTP %{http_code} (%{size_download} B)\n' http://localhost:8080/
+          curl -fsS -o /dev/null -w 'combined.json: HTTP %{http_code} (%{size_download} B)\n' http://localhost:8080/combined.json
+          # Zapis do pliku, nie potok — "curl | grep -q" kończy się błędem curl (23),
+          # bo grep zamyka potok po pierwszym dopasowaniu.
+          curl -fsS -o strona.html http://localhost:8080/
+          grep -q 'Katalog funkcjonalności iMap' strona.html
+          echo "Treść strony: OK (polskie znaki poprawne)"
+          test "$(docker inspect -f '{{.State.Running}}' ci-test)" = "true"
+
+      - name: Posprzątaj
+        if: always()
+        run: docker rm -f ci-test || true

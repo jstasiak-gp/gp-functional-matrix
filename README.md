@@ -110,6 +110,19 @@ Do walidacji/odczytu plików **XLSX** dodatkowo: `pip install openpyxl==3.1.5`
 Szczegóły wdrożeniowe (przebudowa po zmianie danych, wariant z wolumenem, uwierzytelnianie,
 ścieżka bazowa) — patrz sekcja „Wdrożenie" poniżej i `docs/`.
 
+## CI (GitHub Actions)
+
+Workflow `.github/workflows/build.yml` uruchamia się przy zmianie `dane/**`, `generator/**`, `nginx/**`,
+`Dockerfile` lub `requirements.txt` (push do `main`, pull request, albo ręcznie):
+
+1. **Walidacja każdej macierzy** — błąd zatrzymuje pipeline (bramka jakości).
+2. **Generacja strony** + kontrola, że `index.html` i `combined.json` powstały i są poprawne.
+3. **Kontrola determinizmu** — dwa buildy z tego samego wejścia muszą dać identyczny wynik.
+4. **Build obrazu Docker** + smoke test (kontener wstaje, strona i JSON odpowiadają HTTP 200).
+
+Gotowa strona ląduje jako artefakt `site` (do pobrania z zakładki Actions, przechowywany 14 dni).
+Workflow **nie publikuje** obrazu ani strony — wdrożenie pozostaje ręczne.
+
 ## Wdrożenie
 
 - **Przebudowa po zmianie macierzy:** `docker compose up -d --build` (strona zapiekana w obrazie).
