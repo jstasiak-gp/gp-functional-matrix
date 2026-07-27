@@ -1,0 +1,36 @@
+# Kontekst budowania obrazu. Do obrazu trafia TYLKO to, co potrzebne do zbudowania strony:
+#   requirements.txt, generator/, dane/produkty/*.csv, dane/profile/, dane/produkty.yaml, nginx/
+
+# Wynik generacji (powstaje w obrazie na nowo)
+site/
+
+# XLSX — build idzie z CSV (źródło prawdy dla generatora); XLSX nie trafia do obrazu
+**/*.xlsx
+~$*.xlsx
+
+# Część „paczka dla zespołu" — niepotrzebna do zbudowania strony
+format/
+docs/
+skille/
+narzedzia/
+README.md
+CLAUDE.md
+
+# Cache/artefakty Pythona
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Git / edytor / system
+.git/
+.gitignore
+.github/
+.DS_Store
+Thumbs.db
+
+# Pliki lokalne
+*.log
+*.zip
+.env

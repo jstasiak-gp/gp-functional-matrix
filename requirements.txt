@@ -1,0 +1,8 @@
+# Zależności generatora — minimalne, przypięte (build strony).
+# Strona wynikowa jest samodzielna i NIE ma żadnych zależności runtime w przeglądarce.
+PyYAML==6.0.2
+
+# openpyxl jest potrzebny WYŁĄCZNIE, gdy walidujesz/generujesz z plików XLSX.
+# Build kontenerowy idzie z CSV (źródło prawdy), więc nie jest wymagany w obrazie.
+# Odkomentuj do pracy lokalnej z XLSX:
+# openpyxl==3.1.5

@@ -1,0 +1,31 @@
+# docker compose up -d  → strona na http://localhost:8080
+services:
+  katalog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Ustaw datę danych dla powtarzalnego buildu (albo zostaw puste → autodetekcja).
+        WERSJA: "${WERSJA:-}"
+    image: imap-katalog-web:latest
+    container_name: imap-katalog-web
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+    # ── OPCJONALNIE: serwuj lokalnie przegenerowaną stronę BEZ przebudowy obrazu ──
+    # Odkomentuj, aby nginx serwował host-owy ./site (po `make regen`/`make site`).
+    # Pozwala aktualizować treść po zmianie danych bez `docker build`.
+    # volumes:
+    #   - ./site:/usr/share/nginx/html:ro
+
+    # /dane to źródło prawdy (CSV+profile+manifest). Nginx go nie potrzebuje w runtime;
+    # montujemy tylko informacyjnie / dla workflowu regeneracji obok.
+    # volumes:
+    #   - ./dane:/dane:ro

@@ -1,0 +1,21 @@
+# ── Artefakty budowane (regenerowalne z dane/ + generator/) ──
+site/
+
+# ── Python ──
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── Pliki tymczasowe Excela / systemu ──
+~$*.xlsx
+~$*.docx
+.~lock.*
+.DS_Store
+Thumbs.db
+
+# ── Lokalne ──
+.env
+*.log
+*.zip

@@ -1,0 +1,43 @@
+# MANIFEST produktów — jedyne źródło listy produktów dla generatora.
+# Dodanie/zmiana produktu = edycja tego pliku (nie kodu generatora).
+#
+# Pola produktu:
+#   nazwa         – wyświetlana nazwa (zakładka, nagłówki)
+#   klucz         – stabilny slug (nazwy plików/eksportu, kotwice); [a-z0-9_-]
+#   prefiks       – prefiks ID produktowego (IMS/ICL/QIM/CLD) – informacyjnie
+#   plik_csv      – nazwa pliku w dane/produkty/ (źródło prawdy do generacji)
+#   profil        – nazwa pliku w dane/profile/ lub null (wspólny rdzeń)
+#   poziom1_label – etykieta kolumny/ filtra „Poziom 1" (np. Obszar, Moduł)
+
+# Opcjonalna data danych — nadpisuje autodetekcję (mtime CSV / SOURCE_DATE_EPOCH).
+# Ustaw dla w pełni powtarzalnych (bajtowo identycznych) buildów. Format: RRRR-MM-DD.
+wersja_danych: null
+
+produkty:
+  - nazwa: iMapServer
+    klucz: imapserver
+    prefiks: IMS
+    plik_csv: macierz_iMapServer.csv
+    profil: null
+    poziom1_label: Obszar
+
+  - nazwa: iMapClient
+    klucz: imapclient
+    prefiks: ICL
+    plik_csv: macierz_iMapClient.csv
+    profil: null
+    poziom1_label: Obszar
+
+  - nazwa: QuickiMap
+    klucz: quickimap
+    prefiks: QIM
+    plik_csv: macierz_QuickiMap.csv
+    profil: null
+    poziom1_label: Obszar
+
+  - nazwa: iMapCloud
+    klucz: imapcloud
+    prefiks: CLD
+    plik_csv: macierz_iMapCloud.csv
+    profil: imapcloud.json
+    poziom1_label: Moduł

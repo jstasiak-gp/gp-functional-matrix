@@ -1,0 +1,40 @@
+{
+  "produkt": "iMapCloud",
+  "prefiks": "CLD",
+  "prefiks_uwaga": "Od 'Cloud'. Świadomy wyjątek od reguły 'skrót produktu' — ICL jest już zajęte przez iMapClient. Zgodny z wersją macierzy z 2026-07-17.",
+  "aliasy_kolumn": {
+    "Poziom 1 – Moduł": "poziom1"
+  },
+  "kolumny_wylaczone": [
+    "Interfejs",
+    "ID funkcji"
+  ],
+  "kolumny_dodatkowe": [
+    {
+      "naglowek": "Model",
+      "klucz": "model",
+      "opis": "Podział na rdzeń produktu vs rozszerzenia SaaS vs funkcje projektowe.",
+      "slownik": [
+        "Rdzeń",
+        "Rozszerzenie SaaS",
+        "Projektowe"
+      ]
+    }
+  ],
+  "slownik_typ": [
+    "moduł",
+    "widget",
+    "narzędzie",
+    "akcja",
+    "kreator",
+    "wizualizacja",
+    "analiza",
+    "usługa",
+    "zarządzanie",
+    "administracja",
+    "integracja",
+    "import/eksport"
+  ],
+  "zrodlo_wolny_tekst": true,
+  "zrodlo_uwaga": "Kolumna Źródło zawiera dokładne źródła (wolny tekst), nie słownik kontrolowany."
+}

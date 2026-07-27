@@ -1,0 +1,9 @@
+{
+  "produkt": "(wspólny rdzeń)",
+  "opis": "Profil bazowy odpowiada wspólnemu schematowi (SCHEMAT macierzy funkcjonalnosci.md). Produkty bez odstępstw nie potrzebują własnego profilu.",
+  "prefiks": null,
+  "aliasy_kolumn": {},
+  "kolumny_wylaczone": [],
+  "kolumny_dodatkowe": [],
+  "slownik_typ": null
+}

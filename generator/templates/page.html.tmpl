@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katalog funkcjonalności iMap — wersja zintegrowana</title>
+<style>
+:root{--bg:#eef1f5;--panel:#fff;--ink:#20303a;--muted:#6b7a86;--green:#52796f;--green2:#3f5f57;--line:#e2e8ee;--chip:#eef3f1;--chipon:#52796f;--amber:#fff4d6;--shadow:0 1px 3px rgba(30,50,60,.08),0 10px 26px rgba(30,50,60,.06);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:1500px;margin:0 auto;padding:22px 20px 80px}
+header.top{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-radius:16px;padding:22px 26px;box-shadow:var(--shadow)}
+header.top h1{margin:0 0 4px;font-size:22px} header.top p{margin:0;opacity:.9;font-size:13px}
+.searchbar{display:flex;gap:10px;align-items:center;margin:16px 0}
+.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.search input{border:0;outline:0;font-size:15px;width:100%;background:transparent;color:var(--ink)}
+.search svg{color:var(--green);flex:none}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 14px;cursor:pointer;color:var(--ink);font-size:13px}
+.btn:hover{background:#f3f6f4}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+.tab{padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:600;color:var(--muted)}
+.tab.on{background:var(--green);color:#fff;border-color:var(--green)}
+.tab .c{margin-left:8px;font-weight:600;opacity:.8;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:0 0 14px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.stat .num{font-size:22px;font-weight:700;color:var(--green)} .stat .lbl{font-size:12px;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.controls{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--panel);color:var(--ink)}
+.ftitle{font-size:12px;color:var(--muted);margin-right:4px;min-width:70px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 11px;border-radius:999px;background:var(--chip);border:1px solid var(--line);cursor:pointer;font-size:12px}
+.chip.on{background:var(--chipon);color:#fff;border-color:var(--chipon)}
+.meta{padding:8px 16px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--line)}
+.tablewrap{overflow:auto;max-height:72vh}
+table{border-collapse:collapse;width:100%;font-size:13px}
+thead th{position:sticky;top:0;background:#f4f7f5;color:var(--green2);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;z-index:1}
+tbody td{padding:9px 12px;border-bottom:1px solid #eef2f0;vertical-align:top}
+tbody tr:hover{background:#f7faf8}
+tr.weryf{background:var(--amber)} tr.weryf:hover{background:#fdeecb}
+.fn{font-weight:600}.sub{color:var(--muted);font-size:12px;margin-top:2px}
+.cmd{color:#7a5a2f;font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:3px}
+.idp{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;background:#e7efe9;color:var(--green2);white-space:nowrap}
+.pbadge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;background:#e6edf5;color:#33507a}
+.tag-dok{font-size:11px;color:#1f8a55}.tag-nie{font-size:11px;color:#b4632a}
+.arr{font-size:10px;color:var(--muted)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+.foot{margin-top:14px;color:var(--muted);font-size:12px;text-align:center}
+</style></head>
+<body><div class="wrap">
+<header class="top"><h1>Katalog funkcjonalności iMap — wersja zintegrowana</h1>
+<p>Dane: __DATE__ · kolumny dopasowują się do produktu · wyszukiwanie globalne po wszystkich produktach.</p></header>
+<div class="searchbar">
+  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  <input id="q" type="search" placeholder="Szukaj we wszystkich produktach: funkcja, opis, identyfikator, obszar…"></div>
+  <button class="btn" id="dl">⬇ Pobierz JSON</button>
+  <button class="btn" id="reset">Wyczyść</button>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="stats" id="stats"></div>
+<div class="panel">
+  <div class="controls" id="controls"></div>
+  <div class="meta"><span id="count"></span><span>Kliknij nagłówek, aby sortować</span></div>
+  <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tb"></tbody></table></div>
+  <div class="empty" id="empty" style="display:none">Brak wyników.</div>
+</div>
+<div class="foot">Aplikacja samodzielna (offline). Kolumny per produkt sterowane danymi/profilem.</div>
+</div>
+<script>
+const DATA=__DATA__; const PRODUCTS=DATA.products;
+let state={prod:PRODUCTS[0].key,q:"",area:"",facet:{},sort:{k:"",dir:1}};
+const $=id=>document.getElementById(id);
+function esc(s){return (s||"").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function cur(){return PRODUCTS.find(p=>p.key===state.prod);}
+function areaLabel(){const p=cur();return (p&&p.poziom1_label)||'Obszar';}
+function glob(){return state.q.trim().length>0;}
+function allRows(){let a=[];PRODUCTS.forEach(p=>p.rows.forEach(r=>a.push(Object.assign({__p:p.name},r))));return a;}
+function tok(v){return (v||"").split(/[;/]/).map(x=>x.trim()).filter(Boolean);}
+
+function buildTabs(){
+  $("tabs").innerHTML=PRODUCTS.map(p=>`<div class="tab ${p.key===state.prod&&!glob()?'on':''}" data-k="${p.key}">${esc(p.name)}<span class="c">${p.rows.length}</span></div>`).join('');
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{state.prod=t.dataset.k;state.q="";$("q").value="";state.area="";state.facet={};state.sort={k:"",dir:1};renderAll();});
+}
+function buildStats(){
+  if(glob()){$("stats").innerHTML="";return;}
+  const p=cur(); const areas=new Set(p.rows.map(r=>r.poziom1||""));
+  const weryf=p.rows.filter(r=>r.status==='do weryfikacji').length;
+  const cards=[["Funkcje",p.rows.length],[areaLabel()+" (liczba)",areas.size],["Kolumny",p.columns.length],["Do weryfikacji",weryf]];
+  $("stats").innerHTML=cards.map(c=>`<div class="stat"><div class="num">${c[1]}</div><div class="lbl">${esc(c[0])}</div></div>`).join('');
+}
+function buildControls(){
+  if(glob()){$("controls").style.display="none";return;}
+  $("controls").style.display="flex"; const p=cur();
+  const areas=[...new Set(p.rows.map(r=>r.poziom1).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+  let html=`<div class="row"><span class="ftitle">${esc(areaLabel())}</span><select id="area"><option value="">Wszystkie: ${esc(areaLabel().toLowerCase())}</option>${areas.map(a=>`<option ${a===state.area?'selected':''}>${esc(a)}</option>`).join('')}</select></div>`;
+  p.facets.forEach(fk=>{
+    const vals=[...new Set(p.rows.flatMap(r=>tok(r[fk])).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+    if(!vals.length) return;
+    const sel=state.facet[fk]||new Set();
+    html+=`<div class="row"><span class="ftitle">${esc(labelOf(p,fk))}</span><div class="chips" data-fk="${fk}">${vals.map(v=>`<div class="chip ${sel.has(v)?'on':''}" data-v="${esc(v)}">${esc(v)}</div>`).join('')}</div></div>`;
+  });
+  $("controls").innerHTML=html;
+  $("area").onchange=e=>{state.area=e.target.value;render();};
+  document.querySelectorAll('#controls .chips').forEach(box=>{
+    const fk=box.dataset.fk;
+    box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const s=state.facet[fk]||new Set();s.has(c.dataset.v)?s.delete(c.dataset.v):s.add(c.dataset.v);state.facet[fk]=s;c.classList.toggle('on');render();});
+  });
+}
+function labelOf(p,k){const c=p.columns.find(x=>x.k===k);return c?c.label:k;}
+function cols(){return glob()?DATA.wspolne:cur().columns;}
+function match(r){
+  if(!glob()){
+    if(state.area && r.poziom1!==state.area) return false;
+    for(const fk in state.facet){const s=state.facet[fk]; if(s&&s.size){const tv=tok(r[fk]); if(!tv.some(x=>s.has(x))) return false;}}
+  }
+  if(state.q){const h=[r.funkcjonalnosc,r.opis_biznesowy,r.opis,r.identyfikator_techniczny,r.id_produktu,r.poziom1,r.poziom2,r.__p].join(' ').toLowerCase();if(!h.includes(state.q.toLowerCase()))return false;}
+  return true;
+}
+function cell(r,k){
+  if(k==='funkcjonalnosc'){const cmd=r.identyfikator_techniczny?`<div class="cmd">${esc(r.identyfikator_techniczny)}</div>`:'';return `<div class="fn">${esc(r.funkcjonalnosc)}</div><div class="sub">${esc(r.opis_biznesowy||r.opis||'')}</div>${cmd}`;}
+  if(k==='typ'){return r.typ?`<span class="badge">${esc(r.typ)}</span>`:'';}
+  if(k==='dokumentacja'){return r.dokumentacja==='TAK'?'<span class="tag-dok">● TAK</span>':(r.dokumentacja==='NIE'?'<span class="tag-nie">○ NIE</span>':'');}
+  if(k==='id_produktu'){return `<span class="idp">${esc(r.id_produktu||'')}</span>`;}
+  if(k==='__p'){return `<span class="pbadge">${esc(r.__p)}</span>`;}
+  return esc(r[k]||'');
+}
+function render(){
+  const C=cols(); let rows=(glob()?allRows():cur().rows).filter(match);
+  if(state.sort.k){const k=state.sort.k,d=state.sort.dir;rows=rows.slice().sort((a,b)=>{let x=a[k]||'',y=b[k]||'';if(k==='liczba_projektow'){return ((+x||0)-(+y||0))*d;}return String(x).localeCompare(String(y),'pl')*d;});}
+  $("thead").innerHTML="<tr>"+C.map(c=>`<th data-k="${c.k}">${esc(c.label)} <span class="arr">${state.sort.k===c.k?(state.sort.dir>0?'▲':'▼'):''}</span></th>`).join('')+"</tr>";
+  document.querySelectorAll('thead th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;state.sort.dir=state.sort.k===k?-state.sort.dir:1;state.sort.k=k;render();});
+  $("tb").innerHTML=rows.map(r=>{const w=r.status==='do weryfikacji'?' class="weryf"':'';return `<tr${w}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;}).join('');
+  $("empty").style.display=rows.length?'none':'block';
+  $("count").textContent=`Wyświetlono ${rows.length} pozycji (${glob()?'wszystkie produkty':esc(cur().name)})`;
+}
+function renderAll(){buildTabs();buildStats();buildControls();render();}
+$("q").addEventListener('input',e=>{state.q=e.target.value;renderAll();});
+$("reset").onclick=()=>{state.q="";$("q").value="";state.area="";state.facet={};state.sort={k:"",dir:1};renderAll();};
+$("dl").onclick=()=>{const g=glob();let rows=(g?allRows():cur().rows).filter(match);if(state.sort.k){const k=state.sort.k,d=state.sort.dir;rows=rows.slice().sort((a,b)=>{let x=a[k]||'',y=b[k]||'';if(k==='liczba_projektow'){return((+x||0)-(+y||0))*d;}return String(x).localeCompare(String(y),'pl')*d;});}const aktywny=!!(state.q||state.area||Object.values(state.facet).some(x=>x&&x.size));const flt={szukaj:state.q||null,obszar:state.area||null,chipsy:Object.fromEntries(Object.entries(state.facet).map(e=>[e[0],[...e[1]]]))};const payload={generated:DATA.generated,zakres:g?"wszystkie produkty":cur().name,filtr:flt,liczba:rows.length,kolumny:g?DATA.wspolne:cur().columns,wiersze:rows};const base=g?"macierze_wszystkie":("macierz_"+cur().key);const name=base+(aktywny?"_filtr":"")+".json";const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+renderAll();
+</script></body></html>
