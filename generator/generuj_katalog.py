@@ -103,7 +103,9 @@ LABELS = {"id_produktu": "ID", "poziom1": "Obszar", "poziom2": "Grupa",
 DISPLAY_ORDER = ["id_produktu", "poziom1", "poziom2", "funkcjonalnosc", "typ", "rodzaj",
                  "interfejs", "wersja_standard", "model", "liczba_projektow", "projekt",
                  "dokumentacja", "status"]
-ALWAYS = ["poziom1", "poziom2", "funkcjonalnosc", "typ"]
+# Kolumny pokazywane zawsze — tożsamość wiersza. „typ" ŚWIADOMIE tu nie jest:
+# QuickiMap ma tę kolumnę w 100% pustą i wymuszanie jej dawało pustą kolumnę w tabeli.
+ALWAYS = ["poziom1", "poziom2", "funkcjonalnosc"]
 PROJEKT_SET = {"MIIP", "Centra Operacyjne", "RIIP", "MineSens", "GEOINFO2", "ORLEN", "GDOS",
                "WIR", "HydroIQ", "GUGIK", "NSIS", "ARiMR/NGIS", "UM Nowa Sól", "ISOK",
                "MZP/MRP", "GAZ", "CAPAP", "EMUiA", "ORLEN VIA", "OZE", "UMWL",
@@ -192,6 +194,22 @@ def build_product(entry, dane_dir):
     cols = [k for k in DISPLAY_ORDER if k in present or k in ALWAYS]
     facets = [k for k in FACETS_ORDER if k in present]
 
+    # Kolumny o JEDNEJ wartości w całym produkcie (np. Status='potwierdzone' w 201
+    # wierszach) nie różnicują niczego, a zabierają szerokość. Zdejmujemy je z tabeli
+    # i pokazujemy jako informację NAD tabelą — nic nie znika, a wiersz się skraca.
+    # Uwaga: to NIE ukrywa braków (FR-16) — wartość jest wypisana wprost, a wiersze
+    # „do weryfikacji" nadal są podświetlone.
+    uniform = []
+    for k in list(cols):
+        if k in ALWAYS:
+            continue
+        vals = [(r.get(k, "") or "").strip() for r in rows]
+        if rows and all(vals) and len(set(vals)) == 1:
+            uniform.append({"k": k, "label": LABELS.get(k, k), "value": vals[0]})
+            cols.remove(k)
+            if k in facets:
+                facets.remove(k)
+
     labels = dict(LABELS)
     if entry.get("poziom1_label"):    # etykieta „Poziom 1" per produkt (np. Moduł)
         labels["poziom1"] = entry["poziom1_label"]
@@ -199,7 +217,7 @@ def build_product(entry, dane_dir):
 
     return {"key": key, "name": name, "prefiks": entry.get("prefiks"),
             "poziom1_label": entry.get("poziom1_label") or "Obszar",
-            "columns": columns, "facets": facets, "rows": rows}
+            "columns": columns, "facets": facets, "uniform": uniform, "rows": rows}
 
 
 def resolve_wersja(manifest, dane_dir, cli_wersja):

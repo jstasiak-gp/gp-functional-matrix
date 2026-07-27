@@ -42,9 +42,13 @@ __FONTS__
   --md-code-bg-color:#f5f5f5;
   --md-code-fg-color:#36464e;
   --md-surface:#fff;
-  --md-page-bg:#fff;
+  /* Lekko szare tło strony, żeby biały panel tabeli się od niego odcinał
+     (przy białym na białym wiersze zlewały się z otoczeniem). */
+  --md-page-bg:#f5f5f5;
   --md-line:#0000001f;
   --md-row-hover:#0000000a;
+  --md-zebra:#00000005;
+  --md-gsep:#00000029;
   --md-chip-bg:#0000000a;
   /* Zieleń Material #4cae4f / #71c174 daje na bieli tylko ~2,2–2,8:1, więc do
      TEKSTU na jasnym tle bierzemy ciemniejszy wariant z tej samej rodziny
@@ -64,6 +68,8 @@ __FONTS__
   --md-page-bg:hsla(var(--md-hue),15%,14%,1);
   --md-line:hsla(var(--md-hue),15%,90%,.12);
   --md-row-hover:hsla(var(--md-hue),15%,90%,.06);
+  --md-zebra:hsla(var(--md-hue),15%,90%,.03);
+  --md-gsep:hsla(var(--md-hue),15%,90%,.28);
   --md-chip-bg:hsla(var(--md-hue),15%,90%,.08);
   --md-warn-bg:#ff910014;
   --md-ok-fg:#81c784;
@@ -180,10 +186,37 @@ select:focus{outline:0;border-color:var(--md-accent-fg-color)}
 .meta{padding:.3rem .6rem;color:var(--md-default-fg-color--light);font-size:.6rem;
   display:flex;justify-content:space-between;gap:.5rem;
   border-bottom:.05rem solid var(--md-line);flex-wrap:wrap}
+.linkbtn{background:none;border:0;padding:0;cursor:pointer;font:inherit;
+  color:var(--md-typeset-a-color);text-decoration:underline}
+.linkbtn:hover{color:var(--md-accent-fg-color)}
+
+/* ── Wartości jednolite dla całego produktu (zdjęte z tabeli) ── */
+.uni{display:flex;gap:.3rem;flex-wrap:wrap;margin:0 0 .5rem}
+.ubadge{font-size:.62rem;padding:.15rem .45rem;border-radius:var(--md-radius);
+  background:var(--md-chip-bg);color:var(--md-default-fg-color--light);
+  border-left:.15rem solid var(--md-default-fg-color--lighter)}
+.ubadge b{color:var(--md-default-fg-color);font-weight:700}
+.ubadge.warn{background:var(--md-warn-bg);border-left-color:var(--md-warn-line)}
 
 /* ── Tabela w stylu Material ── */
 .tablewrap{overflow:auto;max-height:70vh}
-table{border-collapse:collapse;width:100%;font-size:.64rem}
+table{border-collapse:collapse;width:100%;font-size:.64rem;table-layout:fixed}
+/* Szerokości dobrane do ZMIERZONEJ zawartości kolumn — bez tego przeglądarka
+   dawała 10% szerokości kolumnie w 99% pustej, a treść ściskała do 28%.
+   Kolumna „Funkcjonalność" nie ma width => bierze całą resztę. */
+th[data-k="id_produktu"]{width:13ch}
+th[data-k="poziom1"]{width:18ch}
+th[data-k="poziom2"]{width:20ch}
+th[data-k="typ"]{width:15ch}
+th[data-k="rodzaj"]{width:13ch}
+th[data-k="interfejs"]{width:13ch}
+th[data-k="wersja_standard"]{width:13ch}
+th[data-k="model"]{width:15ch}
+th[data-k="liczba_projektow"]{width:9ch}
+th[data-k="projekt"]{width:22ch}
+th[data-k="dokumentacja"]{width:9ch}
+th[data-k="status"]{width:14ch}
+th[data-k="__p"]{width:14ch}
 thead th{
   position:sticky;top:0;z-index:1;background:var(--md-surface);
   color:var(--md-default-fg-color);text-align:left;font-weight:700;
@@ -191,15 +224,31 @@ thead th{
   cursor:pointer;white-space:nowrap;
 }
 thead th:hover{color:var(--md-accent-fg-color)}
-tbody td{padding:.55em 1em;border-bottom:.05rem solid var(--md-line);vertical-align:top}
+/* Cień pod przyklejonym nagłówkiem dopiero po przewinięciu — inaczej „pływa" */
+.tablewrap.scrolled thead th{box-shadow:0 .1rem .3rem #00000026}
+tbody td{padding:.55em 1em;border-bottom:.05rem solid var(--md-line);
+  vertical-align:top;overflow-wrap:anywhere}
+tbody tr:nth-child(2n){background:var(--md-zebra)}
 tbody tr:hover{background:var(--md-row-hover)}
-tr.weryf{background:var(--md-warn-bg);box-shadow:inset .15rem 0 0 var(--md-warn-line)}
+/* Granica grupy — czytelne „gdzie zaczyna się nowa sekcja” (tylko bez sortowania) */
+tbody tr.gsep td{border-top:.1rem solid var(--md-gsep)}
+tbody tr.weryf{background:var(--md-warn-bg);box-shadow:inset .15rem 0 0 var(--md-warn-line)}
 .fn{font-weight:500}
 .sub{color:var(--md-default-fg-color--light);font-size:.6rem;margin-top:.1em}
 .cmd{color:var(--md-code-fg-color);background:var(--md-code-bg-color);
   font-family:"Roboto Mono",Consolas,monospace;font-size:.56rem;
   margin-top:.2em;padding:.05rem .25rem;border-radius:var(--md-radius);
   display:inline-block;word-break:break-word}
+
+/* ── Tryb kompaktowy (domyślny) ──
+   Wiersz ma dokładnie 2 linie: nazwa + (opis · identyfikator w tej samej linii).
+   Pełny opis pozostaje w tooltipie (title) i po przełączeniu na widok komfortowy. */
+body.compact tbody td{padding:.3em .7em}
+body.compact .meta2{display:flex;gap:.4em;align-items:baseline;min-width:0;margin-top:0}
+body.compact .sub{flex:1;min-width:0;margin:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .idp{font-family:"Roboto Mono",Consolas,monospace;font-size:.56rem;
   color:var(--md-default-fg-color--light);white-space:nowrap}
 .badge{display:inline-block;padding:.05rem .35rem;border-radius:.6rem;font-size:.56rem;
@@ -247,9 +296,13 @@ tr.weryf{background:var(--md-warn-bg);box-shadow:inset .15rem 0 0 var(--md-warn-
     <button class="btn" id="reset">Wyczyść</button>
   </div>
   <div class="stats" id="stats"></div>
+  <div class="uni" id="uniform"></div>
   <div class="panel">
     <div class="controls" id="controls"></div>
-    <div class="meta"><span id="count"></span><span>Kliknij nagłówek, aby sortować</span></div>
+    <div class="meta">
+      <span id="count"></span>
+      <span class="metaright">Kliknij nagłówek, aby sortować · <button class="linkbtn" id="density"></button></span>
+    </div>
     <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tb"></tbody></table></div>
     <div class="empty" id="empty" style="display:none">Brak wyników.</div>
   </div>
@@ -285,6 +338,28 @@ function buildTabs(){
   $("tabs").innerHTML=PRODUCTS.map(p=>`<div class="tab ${p.key===state.prod&&!glob()?'on':''}" data-k="${p.key}">${esc(p.name)}<span class="c">${p.rows.length}</span></div>`).join('');
   document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{state.prod=t.dataset.k;state.q="";$("q").value="";state.area="";state.facet={};state.sort={k:"",dir:1};renderAll();});
 }
+/* ── Gęstość widoku: kompaktowy (domyślny) ↔ komfortowy ── */
+let compact=true;
+function applyDensity(){
+  document.body.classList.toggle('compact',compact);
+  $("density").textContent=compact?"widok kompaktowy":"widok komfortowy";
+  $("density").title=compact
+    ? "Opis skrócony do jednej linii. Kliknij, aby pokazać pełne opisy."
+    : "Pełne opisy. Kliknij, aby zagęścić tabelę.";
+}
+$("density").onclick=()=>{compact=!compact;applyDensity();};
+
+/* Wartości jednolite dla całego produktu — zdjęte z tabeli, pokazane nad nią. */
+function buildUniform(){
+  const box=$("uniform");
+  if(glob()){box.innerHTML="";return;}
+  const u=cur().uniform||[];
+  box.innerHTML=u.map(x=>{
+    const warn=(x.value==="do weryfikacji"||x.value==="NIE");
+    return `<span class="ubadge ${warn?'warn':''}">${esc(x.label)}: <b>${esc(x.value)}</b> — wszystkie wiersze</span>`;
+  }).join('');
+}
+
 function buildStats(){
   if(glob()){$("stats").innerHTML="";return;}
   const p=cur(); const areas=new Set(p.rows.map(r=>r.poziom1||""));
@@ -321,7 +396,15 @@ function match(r){
   return true;
 }
 function cell(r,k){
-  if(k==='funkcjonalnosc'){const cmd=r.identyfikator_techniczny?`<div class="cmd">${esc(r.identyfikator_techniczny)}</div>`:'';return `<div class="fn">${esc(r.funkcjonalnosc)}</div><div class="sub">${esc(r.opis_biznesowy||r.opis||'')}</div>${cmd}`;}
+  if(k==='funkcjonalnosc'){
+    const id=r.identyfikator_techniczny||'';
+    const op=r.opis_biznesowy||r.opis||'';
+    /* title = pełna treść, żeby w trybie kompaktowym nic nie ginęło */
+    const sub=op?`<div class="sub" title="${esc(op)}">${esc(op)}</div>`:'';
+    const cmd=id?`<div class="cmd" title="${esc(id)}">${esc(id)}</div>`:'';
+    const meta=(sub||cmd)?`<div class="meta2">${sub}${cmd}</div>`:'';
+    return `<div class="fn">${esc(r.funkcjonalnosc)}</div>${meta}`;
+  }
   if(k==='typ'){return r.typ?`<span class="badge">${esc(r.typ)}</span>`:'';}
   if(k==='dokumentacja'){return r.dokumentacja==='TAK'?'<span class="tag-dok" title="Udokumentowane w bazie wiedzy">● TAK</span>':(r.dokumentacja==='NIE'?'<span class="tag-nie" title="Brak dokumentacji w bazie wiedzy">○ NIE</span>':'');}
   if(k==='id_produktu'){return `<span class="idp">${esc(r.id_produktu||'')}</span>`;}
@@ -333,11 +416,25 @@ function render(){
   if(state.sort.k){const k=state.sort.k,d=state.sort.dir;rows=rows.slice().sort((a,b)=>{let x=a[k]||'',y=b[k]||'';if(k==='liczba_projektow'){return ((+x||0)-(+y||0))*d;}return String(x).localeCompare(String(y),'pl')*d;});}
   $("thead").innerHTML="<tr>"+C.map(c=>`<th data-k="${c.k}">${esc(c.label)} <span class="arr">${state.sort.k===c.k?(state.sort.dir>0?'▲':'▼'):''}</span></th>`).join('')+"</tr>";
   document.querySelectorAll('thead th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;state.sort.dir=state.sort.k===k?-state.sort.dir:1;state.sort.k=k;render();});
-  $("tb").innerHTML=rows.map(r=>{const w=r.status==='do weryfikacji'?' class="weryf" title="Status: do weryfikacji"':'';return `<tr${w}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;}).join('');
+  /* Granicę grupy rysujemy tylko przy naturalnej kolejności — po ręcznym
+     sortowaniu wiersze nie są już pogrupowane i kreski wprowadzałyby w błąd. */
+  const grupuj=!state.sort.k;
+  $("tb").innerHTML=rows.map((r,i)=>{
+    const cls=[];
+    if(r.status==='do weryfikacji') cls.push('weryf');
+    if(grupuj && i>0 && (rows[i-1].poziom2||'')!==(r.poziom2||'')) cls.push('gsep');
+    const a=cls.length?` class="${cls.join(' ')}"`+(cls.includes('weryf')?' title="Status: do weryfikacji"':''):'';
+    return `<tr${a}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;
+  }).join('');
   $("empty").style.display=rows.length?'none':'block';
   $("count").textContent=`Wyświetlono ${rows.length} pozycji (${glob()?'wszystkie produkty':cur().name})`;
 }
-function renderAll(){buildTabs();buildStats();buildControls();render();}
+function renderAll(){buildTabs();buildStats();buildUniform();buildControls();render();}
+
+/* Cień pod przyklejonym nagłówkiem tabeli dopiero po przewinięciu */
+const tw=document.querySelector('.tablewrap');
+tw.addEventListener('scroll',()=>tw.classList.toggle('scrolled',tw.scrollTop>0),{passive:true});
+applyDensity();
 $("q").addEventListener('input',e=>{state.q=e.target.value;renderAll();});
 $("reset").onclick=()=>{state.q="";$("q").value="";state.area="";state.facet={};state.sort={k:"",dir:1};renderAll();};
 $("dl").onclick=()=>{const g=glob();let rows=(g?allRows():cur().rows).filter(match);if(state.sort.k){const k=state.sort.k,d=state.sort.dir;rows=rows.slice().sort((a,b)=>{let x=a[k]||'',y=b[k]||'';if(k==='liczba_projektow'){return((+x||0)-(+y||0))*d;}return String(x).localeCompare(String(y),'pl')*d;});}const aktywny=!!(state.q||state.area||Object.values(state.facet).some(x=>x&&x.size));const flt={szukaj:state.q||null,obszar:state.area||null,chipsy:Object.fromEntries(Object.entries(state.facet).map(e=>[e[0],[...e[1]]]))};const payload={generated:DATA.generated,zakres:g?"wszystkie produkty":cur().name,filtr:flt,liczba:rows.length,kolumny:g?DATA.wspolne:cur().columns,wiersze:rows};const base=g?"macierze_wszystkie":("macierz_"+cur().key);const name=base+(aktywny?"_filtr":"")+".json";const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
