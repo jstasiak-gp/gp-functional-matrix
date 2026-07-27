@@ -134,7 +134,23 @@ a:hover,a:focus{color:var(--md-accent-fg-color)}
 .tab .c{font-size:.62rem;opacity:.8;
   background:#ffffff26;border-radius:.6rem;padding:0 .3rem}
 
-main{padding:.8rem 0 3rem}
+/* ── Układ z lewym sidebarem — jak podstrony produktowe Bazy Wiedzy
+   (zmierzone: szerokość 242px ≈ 12.1rem, font 14px = .7rem).
+   Sidebar pełni rolę nawigacji po obszarach (zastępuje dawny select). ── */
+.layout{display:flex;gap:1rem;align-items:flex-start}
+.sidebar{flex:none;width:12.1rem;position:sticky;top:4.8rem;
+  max-height:calc(100vh - 5.4rem);overflow:auto;padding:.8rem 0 1rem}
+body.nosb .sidebar{display:none}
+.sb-title{font-size:.7rem;font-weight:700;margin:0 0 .35rem;padding:0 .3rem;
+  color:var(--md-default-fg-color)}
+.sb-link{display:flex;justify-content:space-between;gap:.4rem;align-items:baseline;
+  padding:.22rem .3rem;font-size:.7rem;color:var(--md-default-fg-color);
+  cursor:pointer;border-radius:var(--md-radius);line-height:1.35}
+.sb-link:hover{color:var(--md-accent-fg-color)}
+.sb-link.on{color:var(--md-green-text);font-weight:500}
+.sb-link .n{flex:none;font-size:.58rem;color:var(--md-default-fg-color--lighter)}
+.content{flex:1;min-width:0;padding:.8rem 0 3rem}
+@media (max-width:60rem){ .sidebar{display:none} }
 
 /* ── Wyszukiwarka W NAGŁÓWKU — jak w Bazie Wiedzy (zmierzone: tło
    rgba(0,0,0,.26), radius 2px, wysokość 36px, tekst biały) ── */
@@ -277,6 +293,9 @@ body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
 
 <header class="md-header">
   <div class="md-header__inner md-grid">
+    <button class="iconbtn" id="sbtoggle" title="Pokaż/ukryj panel obszarów" aria-label="Pokaż/ukryj panel obszarów">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </button>
     <a class="back" href="https://demo.gispartner.pl/baza-wiedzy/" title="Wróć do Bazy Wiedzy">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2z"/></svg>
       Baza Wiedzy
@@ -295,7 +314,12 @@ body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
 
 <nav class="md-tabs"><div class="md-grid tabs" id="tabs"></div></nav>
 
-<main class="md-grid">
+<div class="layout md-grid">
+<aside class="sidebar" id="sidebar">
+  <div class="sb-title" id="sbtitle">Obszary</div>
+  <nav id="areanav"></nav>
+</aside>
+<main class="content">
   <div class="actionbar">
     <button class="btn" id="dl">Pobierz JSON</button>
     <button class="btn" id="reset">Wyczyść</button>
@@ -313,6 +337,7 @@ body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
   </div>
   <div class="foot">Dane: __DATE__ · strona samodzielna (offline) · część <a href="https://demo.gispartner.pl/baza-wiedzy/">Bazy Wiedzy GISPartner</a></div>
 </main>
+</div>
 
 <script>
 const DATA=__DATA__; const PRODUCTS=DATA.products;
@@ -372,11 +397,29 @@ function buildStats(){
   const cards=[["Funkcje",p.rows.length],[areaLabel()+" (liczba)",areas.size],["Kolumny",p.columns.length],["Do weryfikacji",weryf]];
   $("stats").innerHTML=cards.map(c=>`<div class="stat"><div class="num">${c[1]}</div><div class="lbl">${esc(c[0])}</div></div>`).join('');
 }
+/* ── Lewy sidebar: nawigacja po obszarach (odpowiednik drzewa nawigacji
+   w Bazie Wiedzy). Zastępuje dawny <select> — ten sam filtr, lepsza widoczność. ── */
+function buildSidebar(){
+  const p=cur();
+  $("sbtitle").textContent=areaLabel()+(glob()?"":"");
+  const areas=[...new Set(p.rows.map(r=>r.poziom1).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+  const licz=a=>p.rows.filter(r=>r.poziom1===a).length;
+  const items=[{v:"",label:"Wszystkie",n:p.rows.length}]
+    .concat(areas.map(a=>({v:a,label:a,n:licz(a)})));
+  $("areanav").innerHTML=items.map(it=>
+    `<div class="sb-link ${(!glob()&&state.area===it.v)?'on':''}" data-v="${esc(it.v)}">`+
+    `<span>${esc(it.label)}</span><span class="n">${it.n}</span></div>`).join('');
+  $("areanav").querySelectorAll('.sb-link').forEach(el=>el.onclick=()=>{
+    state.area=el.dataset.v;
+    if(glob()){state.q="";$("q").value="";}   // wyjdź z trybu globalnego szukania
+    renderAll();
+  });
+}
+
 function buildControls(){
   if(glob()){$("controls").style.display="none";return;}
   $("controls").style.display="flex"; const p=cur();
-  const areas=[...new Set(p.rows.map(r=>r.poziom1).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
-  let html=`<div class="row"><span class="ftitle">${esc(areaLabel())}</span><select id="area"><option value="">Wszystkie: ${esc(areaLabel().toLowerCase())}</option>${areas.map(a=>`<option ${a===state.area?'selected':''}>${esc(a)}</option>`).join('')}</select></div>`;
+  let html="";
   p.facets.forEach(fk=>{
     const vals=[...new Set(p.rows.flatMap(r=>tok(r[fk])).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
     if(!vals.length) return;
@@ -384,7 +427,8 @@ function buildControls(){
     html+=`<div class="row"><span class="ftitle">${esc(labelOf(p,fk))}</span><div class="chips" data-fk="${fk}">${vals.map(v=>`<div class="chip ${sel.has(v)?'on':''}" data-v="${esc(v)}">${esc(v)}</div>`).join('')}</div></div>`;
   });
   $("controls").innerHTML=html;
-  $("area").onchange=e=>{state.area=e.target.value;render();};
+  /* Brak facetów (np. QuickiMap po zdjęciu pustych kolumn) → nie pokazuj pustej ramki */
+  $("controls").style.display=html?"flex":"none";
   document.querySelectorAll('#controls .chips').forEach(box=>{
     const fk=box.dataset.fk;
     box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const s=state.facet[fk]||new Set();s.has(c.dataset.v)?s.delete(c.dataset.v):s.add(c.dataset.v);state.facet[fk]=s;c.classList.toggle('on');render();});
@@ -400,7 +444,11 @@ function match(r){
   if(state.q){const h=[r.funkcjonalnosc,r.opis_biznesowy,r.opis,r.identyfikator_techniczny,r.id_produktu,r.poziom1,r.poziom2,r.__p].join(' ').toLowerCase();if(!h.includes(state.q.toLowerCase()))return false;}
   return true;
 }
-function cell(r,k){
+function cell(r,k,prev){
+  /* Hierarchia bez powtórzeń: Obszar/Grupa wypisujemy tylko wtedy, gdy zmienia
+     się względem poprzedniego wiersza. `prev` jest przekazywany wyłącznie przy
+     naturalnej kolejności — po ręcznym sortowaniu wiersze nie są pogrupowane. */
+  if(prev&&(k==='poziom1'||k==='poziom2')&&(prev[k]||'')===(r[k]||'')) return '';
   if(k==='funkcjonalnosc'){
     const id=r.identyfikator_techniczny||'';
     const op=r.opis_biznesowy||r.opis||'';
@@ -429,12 +477,16 @@ function render(){
     if(r.status==='do weryfikacji') cls.push('weryf');
     if(grupuj && i>0 && (rows[i-1].poziom2||'')!==(r.poziom2||'')) cls.push('gsep');
     const a=cls.length?` class="${cls.join(' ')}"`+(cls.includes('weryf')?' title="Status: do weryfikacji"':''):'';
-    return `<tr${a}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;
+    const prev=(grupuj&&i>0)?rows[i-1]:null;
+    return `<tr${a}>`+C.map(c=>`<td>${cell(r,c.k,prev)}</td>`).join('')+`</tr>`;
   }).join('');
   $("empty").style.display=rows.length?'none':'block';
   $("count").textContent=`Wyświetlono ${rows.length} pozycji (${glob()?'wszystkie produkty':cur().name})`;
 }
-function renderAll(){buildTabs();buildStats();buildUniform();buildControls();render();}
+function renderAll(){buildTabs();buildSidebar();buildStats();buildUniform();buildControls();render();}
+
+/* Zwijanie sidebara — oddaje szerokość tabeli */
+$("sbtoggle").onclick=()=>document.body.classList.toggle('nosb');
 
 /* Cień pod przyklejonym nagłówkiem tabeli dopiero po przewinięciu */
 const tw=document.querySelector('.tablewrap');
