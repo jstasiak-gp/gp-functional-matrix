@@ -42,9 +42,9 @@ __FONTS__
   --md-code-bg-color:#f5f5f5;
   --md-code-fg-color:#36464e;
   --md-surface:#fff;
-  /* Lekko szare tło strony, żeby biały panel tabeli się od niego odcinał
-     (przy białym na białym wiersze zlewały się z otoczeniem). */
-  --md-page-bg:#f5f5f5;
+  /* Tło BIAŁE — tak jak w Bazie Wiedzy (zmierzone: rgb(255,255,255)).
+     Panel tabeli odcina się obramowaniem, nie szarym tłem strony. */
+  --md-page-bg:#fff;
   --md-line:#0000001f;
   --md-row-hover:#0000000a;
   --md-zebra:#00000005;
@@ -107,7 +107,6 @@ a:hover,a:focus{color:var(--md-accent-fg-color)}
   white-space:nowrap;
 }
 .md-header .back:hover{opacity:1;background:#ffffff26;color:var(--md-primary-bg-color)}
-.md-header .sep{opacity:.5;font-size:.7rem}
 .md-header__title{font-size:.9rem;font-weight:700;flex:1;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .md-header .iconbtn{
@@ -119,33 +118,40 @@ a:hover,a:focus{color:var(--md-accent-fg-color)}
 [data-md-color-scheme="default"] .icon-light{display:none}
 [data-md-color-scheme="slate"] .icon-dark{display:none}
 
-/* ── Pasek zakładek produktów (wzorowany na md-tabs) ── */
+/* ── Pasek zakładek produktów — wartości ZMIERZONE w Bazie Wiedzy:
+   wysokość 48px (2.4rem), font 14px (.7rem), waga 400 (nie pogrubione!),
+   nieaktywna opacity .7, aktywna opacity 1 BEZ podkreślenia. ── */
 .md-tabs{background:var(--md-primary-fg-color);color:var(--md-primary-bg-color);
-  box-shadow:var(--md-shadow-z1);overflow-x:auto}
-.md-tabs .tabs{display:flex;align-items:stretch;min-height:1.9rem}
+  overflow-x:auto}
+.md-tabs .tabs{display:flex;align-items:center;height:2.4rem}
 .tab{
-  display:flex;align-items:center;gap:.3rem;padding:.35rem .6rem;cursor:pointer;
-  font-size:.7rem;font-weight:700;opacity:.75;white-space:nowrap;
-  border-bottom:.1rem solid transparent;color:var(--md-primary-bg-color);
+  display:flex;align-items:center;gap:.3rem;padding:0 .6rem;cursor:pointer;
+  font-size:.7rem;font-weight:400;opacity:.7;white-space:nowrap;
+  color:var(--md-primary-bg-color);height:100%;
 }
-.tab:hover{opacity:1;background:#ffffff1a}
-.tab.on{opacity:1;border-bottom-color:var(--md-primary-bg-color)}
-.tab .c{font-weight:400;font-size:.62rem;opacity:.85;
+.tab:hover{opacity:1}
+.tab.on{opacity:1}
+.tab .c{font-size:.62rem;opacity:.8;
   background:#ffffff26;border-radius:.6rem;padding:0 .3rem}
 
 main{padding:.8rem 0 3rem}
 
-/* ── Wyszukiwarka ── */
-.searchbar{display:flex;gap:.4rem;align-items:center;margin:0 0 .7rem;flex-wrap:wrap}
-.search{
-  flex:1;min-width:14rem;display:flex;align-items:center;gap:.35rem;
-  background:var(--md-surface);border:.05rem solid var(--md-line);
-  border-radius:var(--md-radius);padding:.35rem .5rem;box-shadow:var(--md-shadow-z1);
+/* ── Wyszukiwarka W NAGŁÓWKU — jak w Bazie Wiedzy (zmierzone: tło
+   rgba(0,0,0,.26), radius 2px, wysokość 36px, tekst biały) ── */
+.hsearch{
+  display:flex;align-items:center;gap:.35rem;flex:1;
+  max-width:22rem;min-width:8rem;height:1.8rem;
+  background:#00000042;border-radius:var(--md-radius);padding:0 .45rem;
 }
-.search:focus-within{border-color:var(--md-accent-fg-color)}
-.search input{border:0;outline:0;font:inherit;font-size:.72rem;width:100%;
-  background:transparent;color:var(--md-default-fg-color)}
-.search svg{width:.8rem;height:.8rem;fill:var(--md-default-fg-color--light);flex:none}
+.hsearch:focus-within{background:#00000059}
+.hsearch input{border:0;outline:0;font:inherit;font-size:.7rem;width:100%;
+  background:transparent;color:#fff}
+.hsearch input::placeholder{color:#ffffffb3}
+.hsearch svg{width:.8rem;height:.8rem;fill:#fff;flex:none;opacity:.9}
+
+/* ── Pasek akcji nad tabelą ── */
+.actionbar{display:flex;gap:.4rem;align-items:center;justify-content:flex-end;
+  margin:0 0 .6rem;flex-wrap:wrap}
 .btn{
   border:.05rem solid var(--md-line);background:var(--md-surface);
   border-radius:var(--md-radius);padding:.35rem .6rem;cursor:pointer;
@@ -275,8 +281,11 @@ body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2z"/></svg>
       Baza Wiedzy
     </a>
-    <span class="sep">/</span>
     <div class="md-header__title">Macierze funkcjonalności</div>
+    <div class="hsearch">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      <input id="q" type="search" placeholder="Szukaj we wszystkich produktach…">
+    </div>
     <button class="iconbtn" id="theme" title="Przełącz tryb jasny/ciemny" aria-label="Przełącz tryb jasny/ciemny">
       <svg class="icon-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 10a6 6 0 1 1 0-12 6 6 0 0 1 0 12m8-5h3v-2h-3zM1 11h3v2H1zm10-10h2v3h-2zm0 19h2v3h-2zM4.9 3.5 7 5.6 5.6 7 3.5 4.9zM16.9 18.4 19 20.5l-1.4 1.4-2.1-2.1zM20.5 5 19 3.5l-2.1 2.1L18.4 7zM5.6 17l1.4 1.4-2.1 2.1L3.5 19z"/></svg>
       <svg class="icon-light" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-4.4 2.26 5.4 5.4 0 0 1-5.4-5.4c0-1.81.9-3.4 2.26-4.4-.44-.06-.9-.1-1.36-.1"/></svg>
@@ -287,11 +296,7 @@ body.compact .cmd{flex:none;max-width:16ch;margin:0;background:none;padding:0;
 <nav class="md-tabs"><div class="md-grid tabs" id="tabs"></div></nav>
 
 <main class="md-grid">
-  <div class="searchbar">
-    <div class="search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      <input id="q" type="search" placeholder="Szukaj we wszystkich produktach: funkcja, opis, identyfikator, obszar…">
-    </div>
+  <div class="actionbar">
     <button class="btn" id="dl">Pobierz JSON</button>
     <button class="btn" id="reset">Wyczyść</button>
   </div>
