@@ -14,6 +14,7 @@ Użycie:
                               [--manifest PLIK] [--template PLIK] [--wersja RRRR-MM-DD]
 """
 import argparse
+import base64
 import csv
 import datetime
 import json
@@ -39,6 +40,50 @@ PROJECT_ROOT = os.path.dirname(GENERATOR_DIR)
 DEFAULT_DANE = os.path.join(PROJECT_ROOT, "dane")
 DEFAULT_OUT = os.path.join(PROJECT_ROOT, "site")
 DEFAULT_TEMPLATE = os.path.join(GENERATOR_DIR, "templates", "page.html.tmpl")
+FONTS_DIR = os.path.join(GENERATOR_DIR, "templates", "fonts")
+
+# Fonty wbudowywane w HTML jako data-URI — strona ma wyglądać jak Baza Wiedzy
+# (Roboto), ale bez wywołań sieciowych do Google Fonts (NFR-1/NFR-3).
+# Roboto v51 / Roboto Mono v31 to fonty ZMIENNE: jeden plik = cały zakres 100–900.
+# Zakresy unicode skopiowane z Google Fonts (latin oraz latin-ext dla polskich znaków).
+UNICODE_LATIN = ("U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,"
+                 "U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,"
+                 "U+2212,U+2215,U+FEFF,U+FFFD")
+UNICODE_LATIN_EXT = ("U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,"
+                     "U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,"
+                     "U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF")
+FONT_FACES = [
+    ("Roboto", "roboto-latin.woff2", UNICODE_LATIN),
+    ("Roboto", "roboto-latin-ext.woff2", UNICODE_LATIN_EXT),
+    ("Roboto Mono", "roboto-mono-latin.woff2", UNICODE_LATIN),
+    ("Roboto Mono", "roboto-mono-latin-ext.woff2", UNICODE_LATIN_EXT),
+]
+
+
+def build_font_css():
+    """Zbuduj reguły @font-face z fontami osadzonymi jako data-URI (base64).
+
+    Brak katalogu/plików nie przerywa builda — strona zadziała na foncie
+    zastępczym, ale wypisujemy ostrzeżenie, bo wygląd rozjedzie się z Bazą Wiedzy.
+    """
+    faces = []
+    missing = []
+    for family, filename, urange in FONT_FACES:
+        path = os.path.join(FONTS_DIR, filename)
+        if not os.path.isfile(path):
+            missing.append(filename)
+            continue
+        with open(path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("ascii")
+        faces.append(
+            "@font-face{font-family:'%s';font-style:normal;font-weight:100 900;"
+            "font-display:swap;src:url(data:font/woff2;base64,%s) format('woff2');"
+            "unicode-range:%s}" % (family, b64, urange)
+        )
+    if missing:
+        sys.stderr.write("UWAGA: brak plikow fontow (%s) — strona uzyje fontu zastepczego.\n"
+                         % ", ".join(missing))
+    return "\n".join(faces)
 
 # ── Kontrakt schematu (klucze CSV) ─────────────────────────────────────────
 BASE_HEADERS = ["Lp", "ID", "Poziom 1 – Obszar", "Poziom 2 – Grupa", "Funkcjonalność",
@@ -218,7 +263,12 @@ def main():
 
     with open(a.template, encoding="utf-8") as f:
         template = f.read()
-    html = template.replace("__DATA__", data_json).replace("__DATE__", wersja)
+    # Kolejność podmian ma znaczenie: __FONTS__ i __DATE__ najpierw, bo __DATA__
+    # wstawia duży blok JSON, w którym nie chcemy niczego dalej podmieniać.
+    html = (template
+            .replace("__FONTS__", build_font_css())
+            .replace("__DATE__", wersja)
+            .replace("__DATA__", data_json))
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
 

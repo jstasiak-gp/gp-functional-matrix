@@ -1,71 +1,261 @@
 <!DOCTYPE html>
 <html lang="pl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Katalog funkcjonalności iMap — wersja zintegrowana</title>
+<title>Macierze funkcjonalności iMap — Baza Wiedzy</title>
+<script>
+/* Ustaw motyw ZANIM strona się wyrenderuje (inaczej mignęłaby jasna na ciemnym motywie). */
+(function(){try{
+  var s=localStorage.getItem("macierze-scheme")||"auto";
+  var dark=s==="dark"||(s==="auto"&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-md-color-scheme",dark?"slate":"default");
+}catch(e){document.documentElement.setAttribute("data-md-color-scheme","default");}})();
+</script>
 <style>
-:root{--bg:#eef1f5;--panel:#fff;--ink:#20303a;--muted:#6b7a86;--green:#52796f;--green2:#3f5f57;--line:#e2e8ee;--chip:#eef3f1;--chipon:#52796f;--amber:#fff4d6;--shadow:0 1px 3px rgba(30,50,60,.08),0 10px 26px rgba(30,50,60,.06);}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.5}
-.wrap{max-width:1500px;margin:0 auto;padding:22px 20px 80px}
-header.top{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-radius:16px;padding:22px 26px;box-shadow:var(--shadow)}
-header.top h1{margin:0 0 4px;font-size:22px} header.top p{margin:0;opacity:.9;font-size:13px}
-.searchbar{display:flex;gap:10px;align-items:center;margin:16px 0}
-.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
-.search input{border:0;outline:0;font-size:15px;width:100%;background:transparent;color:var(--ink)}
-.search svg{color:var(--green);flex:none}
-.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 14px;cursor:pointer;color:var(--ink);font-size:13px}
-.btn:hover{background:#f3f6f4}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
-.tab{padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:600;color:var(--muted)}
-.tab.on{background:var(--green);color:#fff;border-color:var(--green)}
-.tab .c{margin-left:8px;font-weight:600;opacity:.8;font-size:12px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:0 0 14px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
-.stat .num{font-size:22px;font-weight:700;color:var(--green)} .stat .lbl{font-size:12px;color:var(--muted)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.controls{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-select{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--panel);color:var(--ink)}
-.ftitle{font-size:12px;color:var(--muted);margin-right:4px;min-width:70px}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{padding:5px 11px;border-radius:999px;background:var(--chip);border:1px solid var(--line);cursor:pointer;font-size:12px}
-.chip.on{background:var(--chipon);color:#fff;border-color:var(--chipon)}
-.meta{padding:8px 16px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;border-bottom:1px solid var(--line)}
-.tablewrap{overflow:auto;max-height:72vh}
-table{border-collapse:collapse;width:100%;font-size:13px}
-thead th{position:sticky;top:0;background:#f4f7f5;color:var(--green2);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;z-index:1}
-tbody td{padding:9px 12px;border-bottom:1px solid #eef2f0;vertical-align:top}
-tbody tr:hover{background:#f7faf8}
-tr.weryf{background:var(--amber)} tr.weryf:hover{background:#fdeecb}
-.fn{font-weight:600}.sub{color:var(--muted);font-size:12px;margin-top:2px}
-.cmd{color:#7a5a2f;font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:3px}
-.idp{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--muted)}
-.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;background:#e7efe9;color:var(--green2);white-space:nowrap}
-.pbadge{display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;background:#e6edf5;color:#33507a}
-.tag-dok{font-size:11px;color:#1f8a55}.tag-nie{font-size:11px;color:#b4632a}
-.arr{font-size:10px;color:var(--muted)}
-.empty{padding:40px;text-align:center;color:var(--muted)}
-.foot{margin-top:14px;color:var(--muted);font-size:12px;text-align:center}
+/* ── Fonty wbudowane (Roboto / Roboto Mono) — bez wywołań sieciowych ── */
+__FONTS__
+
+/* ─────────────────────────────────────────────────────────────────────
+   Tokeny przejęte z Bazy Wiedzy (MkDocs Material 9, primary=green,
+   accent=blue), żeby macierz wyglądała jak jej część.
+   ───────────────────────────────────────────────────────────────────── */
+:root{
+  --md-hue:225;
+  --md-primary-fg-color:#4cae4f;
+  --md-primary-fg-color--light:#68bb6c;
+  --md-primary-fg-color--dark:#398e3d;
+  --md-primary-bg-color:#fff;
+  --md-accent-fg-color:#4287ff;
+  --md-accent-fg-color--transparent:#4287ff1a;
+  --md-typeset-a-color:#71c174;
+  --md-shadow-z1:0 .2rem .5rem #0000000d,0 0 .05rem #0000001a;
+  --md-radius:.1rem;
+  --md-warn-bg:#ff91001f;
+  --md-warn-line:#ff9100;
+  --md-ok-fg:#2e7d32;
+  --md-no-fg:#b4632a;
+}
+[data-md-color-scheme="default"]{
+  --md-default-fg-color:#000000de;
+  --md-default-fg-color--light:#0000008a;
+  --md-default-fg-color--lighter:#00000052;
+  --md-default-bg-color:#fff;
+  --md-code-bg-color:#f5f5f5;
+  --md-code-fg-color:#36464e;
+  --md-surface:#fff;
+  --md-page-bg:#fff;
+  --md-line:#0000001f;
+  --md-row-hover:#0000000a;
+  --md-chip-bg:#0000000a;
+  /* Zieleń Material #4cae4f / #71c174 daje na bieli tylko ~2,2–2,8:1, więc do
+     TEKSTU na jasnym tle bierzemy ciemniejszy wariant z tej samej rodziny
+     (Material Green 800) — kolor pozostaje spójny z Bazą Wiedzy, a kontrast
+     spełnia WCAG AA (NFR-7). Tła i akcenty zostają bez zmian. */
+  --md-typeset-a-color:#2e7d32;
+  --md-green-text:#2e7d32;
+}
+[data-md-color-scheme="slate"]{
+  --md-default-fg-color:hsla(var(--md-hue),15%,90%,.82);
+  --md-default-fg-color--light:hsla(var(--md-hue),15%,90%,.56);
+  --md-default-fg-color--lighter:hsla(var(--md-hue),15%,90%,.32);
+  --md-default-bg-color:hsla(var(--md-hue),15%,14%,1);
+  --md-code-bg-color:hsla(var(--md-hue),15%,18%,1);
+  --md-code-fg-color:hsla(var(--md-hue),18%,86%,.82);
+  --md-surface:hsla(var(--md-hue),15%,18%,1);
+  --md-page-bg:hsla(var(--md-hue),15%,14%,1);
+  --md-line:hsla(var(--md-hue),15%,90%,.12);
+  --md-row-hover:hsla(var(--md-hue),15%,90%,.06);
+  --md-chip-bg:hsla(var(--md-hue),15%,90%,.08);
+  --md-warn-bg:#ff910014;
+  --md-ok-fg:#81c784;
+  --md-no-fg:#e2a06a;
+  --md-shadow-z1:0 .2rem .5rem #00000040,0 0 .05rem #00000059;
+  /* Na ciemnym tle jaśniejsza zieleń Material ma już dobry kontrast (~7:1). */
+  --md-typeset-a-color:#71c174;
+  --md-green-text:#71c174;
+}
+
+/* ── Baza typograficzna dokładnie jak w Material: 1rem = 20px ── */
+html{font-size:125%;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;background:var(--md-page-bg);color:var(--md-default-fg-color);
+  font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+  font-size:.8rem;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--md-typeset-a-color);text-decoration:none}
+a:hover,a:focus{color:var(--md-accent-fg-color)}
+
+/* Siatka treści — ta sama szerokość co w Bazie Wiedzy (extra.css: 67.5rem) */
+.md-grid{max-width:67.5rem;margin:0 auto;padding:0 .8rem}
+
+/* ── Nagłówek: zielony pasek jak w Bazie Wiedzy ── */
+.md-header{
+  position:sticky;top:0;z-index:5;
+  background:var(--md-primary-fg-color);color:var(--md-primary-bg-color);
+  box-shadow:0 0 .2rem #0000001a,0 .2rem .4rem #0000000d;
+}
+.md-header__inner{display:flex;align-items:center;gap:.4rem;height:2.4rem}
+.md-header .back{
+  display:inline-flex;align-items:center;gap:.25rem;color:var(--md-primary-bg-color);
+  font-size:.7rem;opacity:.9;padding:.2rem .35rem;border-radius:var(--md-radius);
+  white-space:nowrap;
+}
+.md-header .back:hover{opacity:1;background:#ffffff26;color:var(--md-primary-bg-color)}
+.md-header .sep{opacity:.5;font-size:.7rem}
+.md-header__title{font-size:.9rem;font-weight:700;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.md-header .iconbtn{
+  background:none;border:0;color:var(--md-primary-bg-color);cursor:pointer;
+  width:1.6rem;height:1.6rem;border-radius:50%;display:grid;place-items:center;flex:none;
+}
+.md-header .iconbtn:hover{background:#ffffff26}
+.md-header .iconbtn svg{width:.9rem;height:.9rem;fill:currentColor}
+[data-md-color-scheme="default"] .icon-light{display:none}
+[data-md-color-scheme="slate"] .icon-dark{display:none}
+
+/* ── Pasek zakładek produktów (wzorowany na md-tabs) ── */
+.md-tabs{background:var(--md-primary-fg-color);color:var(--md-primary-bg-color);
+  box-shadow:var(--md-shadow-z1);overflow-x:auto}
+.md-tabs .tabs{display:flex;align-items:stretch;min-height:1.9rem}
+.tab{
+  display:flex;align-items:center;gap:.3rem;padding:.35rem .6rem;cursor:pointer;
+  font-size:.7rem;font-weight:700;opacity:.75;white-space:nowrap;
+  border-bottom:.1rem solid transparent;color:var(--md-primary-bg-color);
+}
+.tab:hover{opacity:1;background:#ffffff1a}
+.tab.on{opacity:1;border-bottom-color:var(--md-primary-bg-color)}
+.tab .c{font-weight:400;font-size:.62rem;opacity:.85;
+  background:#ffffff26;border-radius:.6rem;padding:0 .3rem}
+
+main{padding:.8rem 0 3rem}
+
+/* ── Wyszukiwarka ── */
+.searchbar{display:flex;gap:.4rem;align-items:center;margin:0 0 .7rem;flex-wrap:wrap}
+.search{
+  flex:1;min-width:14rem;display:flex;align-items:center;gap:.35rem;
+  background:var(--md-surface);border:.05rem solid var(--md-line);
+  border-radius:var(--md-radius);padding:.35rem .5rem;box-shadow:var(--md-shadow-z1);
+}
+.search:focus-within{border-color:var(--md-accent-fg-color)}
+.search input{border:0;outline:0;font:inherit;font-size:.72rem;width:100%;
+  background:transparent;color:var(--md-default-fg-color)}
+.search svg{width:.8rem;height:.8rem;fill:var(--md-default-fg-color--light);flex:none}
+.btn{
+  border:.05rem solid var(--md-line);background:var(--md-surface);
+  border-radius:var(--md-radius);padding:.35rem .6rem;cursor:pointer;
+  color:var(--md-default-fg-color);font:inherit;font-size:.68rem;font-weight:500;
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--md-accent-fg-color);color:var(--md-accent-fg-color)}
+
+/* ── Karty statystyk ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(7rem,1fr));
+  gap:.4rem;margin:0 0 .7rem}
+.stat{background:var(--md-surface);border:.05rem solid var(--md-line);
+  border-radius:var(--md-radius);padding:.4rem .55rem;box-shadow:var(--md-shadow-z1)}
+.stat .num{font-size:1.1rem;font-weight:700;color:var(--md-green-text);line-height:1.2}
+.stat .lbl{font-size:.6rem;color:var(--md-default-fg-color--light)}
+
+/* ── Panel z tabelą ── */
+.panel{background:var(--md-surface);border:.05rem solid var(--md-line);
+  border-radius:var(--md-radius);box-shadow:var(--md-shadow-z1);overflow:hidden}
+.controls{padding:.5rem .6rem;border-bottom:.05rem solid var(--md-line);
+  display:flex;flex-direction:column;gap:.4rem}
+.row{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
+select{border:.05rem solid var(--md-line);border-radius:var(--md-radius);
+  padding:.25rem .4rem;background:var(--md-surface);color:var(--md-default-fg-color);
+  font:inherit;font-size:.66rem}
+select:focus{outline:0;border-color:var(--md-accent-fg-color)}
+.ftitle{font-size:.6rem;color:var(--md-default-fg-color--light);
+  margin-right:.2rem;min-width:4.5rem;text-transform:uppercase;
+  letter-spacing:.02em;font-weight:700}
+.chips{display:flex;gap:.2rem;flex-wrap:wrap}
+.chip{
+  padding:.1rem .4rem;border-radius:.6rem;background:var(--md-chip-bg);
+  border:.05rem solid transparent;cursor:pointer;font-size:.62rem;
+  color:var(--md-default-fg-color--light);
+}
+.chip:hover{color:var(--md-accent-fg-color);border-color:var(--md-accent-fg-color)}
+.chip.on{background:var(--md-primary-fg-color);color:#fff;border-color:var(--md-primary-fg-color)}
+.meta{padding:.3rem .6rem;color:var(--md-default-fg-color--light);font-size:.6rem;
+  display:flex;justify-content:space-between;gap:.5rem;
+  border-bottom:.05rem solid var(--md-line);flex-wrap:wrap}
+
+/* ── Tabela w stylu Material ── */
+.tablewrap{overflow:auto;max-height:70vh}
+table{border-collapse:collapse;width:100%;font-size:.64rem}
+thead th{
+  position:sticky;top:0;z-index:1;background:var(--md-surface);
+  color:var(--md-default-fg-color);text-align:left;font-weight:700;
+  padding:.5em 1em;border-bottom:.05rem solid var(--md-line);
+  cursor:pointer;white-space:nowrap;
+}
+thead th:hover{color:var(--md-accent-fg-color)}
+tbody td{padding:.55em 1em;border-bottom:.05rem solid var(--md-line);vertical-align:top}
+tbody tr:hover{background:var(--md-row-hover)}
+tr.weryf{background:var(--md-warn-bg);box-shadow:inset .15rem 0 0 var(--md-warn-line)}
+.fn{font-weight:500}
+.sub{color:var(--md-default-fg-color--light);font-size:.6rem;margin-top:.1em}
+.cmd{color:var(--md-code-fg-color);background:var(--md-code-bg-color);
+  font-family:"Roboto Mono",Consolas,monospace;font-size:.56rem;
+  margin-top:.2em;padding:.05rem .25rem;border-radius:var(--md-radius);
+  display:inline-block;word-break:break-word}
+.idp{font-family:"Roboto Mono",Consolas,monospace;font-size:.56rem;
+  color:var(--md-default-fg-color--light);white-space:nowrap}
+.badge{display:inline-block;padding:.05rem .35rem;border-radius:.6rem;font-size:.56rem;
+  background:var(--md-chip-bg);color:var(--md-default-fg-color--light);white-space:nowrap}
+.pbadge{display:inline-block;padding:.05rem .35rem;border-radius:var(--md-radius);
+  font-size:.56rem;font-weight:700;background:var(--md-accent-fg-color--transparent);
+  color:var(--md-accent-fg-color);white-space:nowrap}
+.tag-dok{font-size:.6rem;color:var(--md-ok-fg);white-space:nowrap}
+.tag-nie{font-size:.6rem;color:var(--md-no-fg);white-space:nowrap}
+.arr{font-size:.5rem;color:var(--md-default-fg-color--light)}
+.empty{padding:2rem;text-align:center;color:var(--md-default-fg-color--light)}
+.foot{margin-top:.7rem;color:var(--md-default-fg-color--light);font-size:.6rem;text-align:center}
+
+@media (max-width:60rem){
+  .md-header__title{font-size:.8rem}
+  .ftitle{min-width:auto}
+}
 </style></head>
-<body><div class="wrap">
-<header class="top"><h1>Katalog funkcjonalności iMap — wersja zintegrowana</h1>
-<p>Dane: __DATE__ · kolumny dopasowują się do produktu · wyszukiwanie globalne po wszystkich produktach.</p></header>
-<div class="searchbar">
-  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-  <input id="q" type="search" placeholder="Szukaj we wszystkich produktach: funkcja, opis, identyfikator, obszar…"></div>
-  <button class="btn" id="dl">⬇ Pobierz JSON</button>
-  <button class="btn" id="reset">Wyczyść</button>
-</div>
-<div class="tabs" id="tabs"></div>
-<div class="stats" id="stats"></div>
-<div class="panel">
-  <div class="controls" id="controls"></div>
-  <div class="meta"><span id="count"></span><span>Kliknij nagłówek, aby sortować</span></div>
-  <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tb"></tbody></table></div>
-  <div class="empty" id="empty" style="display:none">Brak wyników.</div>
-</div>
-<div class="foot">Aplikacja samodzielna (offline). Kolumny per produkt sterowane danymi/profilem.</div>
-</div>
+<body>
+
+<header class="md-header">
+  <div class="md-header__inner md-grid">
+    <a class="back" href="https://demo.gispartner.pl/baza-wiedzy/" title="Wróć do Bazy Wiedzy">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2z"/></svg>
+      Baza Wiedzy
+    </a>
+    <span class="sep">/</span>
+    <div class="md-header__title">Macierze funkcjonalności</div>
+    <button class="iconbtn" id="theme" title="Przełącz tryb jasny/ciemny" aria-label="Przełącz tryb jasny/ciemny">
+      <svg class="icon-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 10a6 6 0 1 1 0-12 6 6 0 0 1 0 12m8-5h3v-2h-3zM1 11h3v2H1zm10-10h2v3h-2zm0 19h2v3h-2zM4.9 3.5 7 5.6 5.6 7 3.5 4.9zM16.9 18.4 19 20.5l-1.4 1.4-2.1-2.1zM20.5 5 19 3.5l-2.1 2.1L18.4 7zM5.6 17l1.4 1.4-2.1 2.1L3.5 19z"/></svg>
+      <svg class="icon-light" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-4.4 2.26 5.4 5.4 0 0 1-5.4-5.4c0-1.81.9-3.4 2.26-4.4-.44-.06-.9-.1-1.36-.1"/></svg>
+    </button>
+  </div>
+</header>
+
+<nav class="md-tabs"><div class="md-grid tabs" id="tabs"></div></nav>
+
+<main class="md-grid">
+  <div class="searchbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      <input id="q" type="search" placeholder="Szukaj we wszystkich produktach: funkcja, opis, identyfikator, obszar…">
+    </div>
+    <button class="btn" id="dl">Pobierz JSON</button>
+    <button class="btn" id="reset">Wyczyść</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="panel">
+    <div class="controls" id="controls"></div>
+    <div class="meta"><span id="count"></span><span>Kliknij nagłówek, aby sortować</span></div>
+    <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tb"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">Brak wyników.</div>
+  </div>
+  <div class="foot">Dane: __DATE__ · strona samodzielna (offline) · część <a href="https://demo.gispartner.pl/baza-wiedzy/">Bazy Wiedzy GISPartner</a></div>
+</main>
+
 <script>
 const DATA=__DATA__; const PRODUCTS=DATA.products;
 let state={prod:PRODUCTS[0].key,q:"",area:"",facet:{},sort:{k:"",dir:1}};
@@ -76,6 +266,20 @@ function areaLabel(){const p=cur();return (p&&p.poziom1_label)||'Obszar';}
 function glob(){return state.q.trim().length>0;}
 function allRows(){let a=[];PRODUCTS.forEach(p=>p.rows.forEach(r=>a.push(Object.assign({__p:p.name},r))));return a;}
 function tok(v){return (v||"").split(/[;/]/).map(x=>x.trim()).filter(Boolean);}
+
+/* ── Motyw: auto (wg systemu) ↔ jasny ↔ ciemny, zapamiętywany jak w Material ── */
+const mq=window.matchMedia("(prefers-color-scheme: dark)");
+function applyScheme(){
+  const s=localStorage.getItem("macierze-scheme")||"auto";
+  const dark=s==="dark"||(s==="auto"&&mq.matches);
+  document.documentElement.setAttribute("data-md-color-scheme",dark?"slate":"default");
+}
+mq.addEventListener("change",()=>{if((localStorage.getItem("macierze-scheme")||"auto")==="auto")applyScheme();});
+$("theme").onclick=()=>{
+  const dark=document.documentElement.getAttribute("data-md-color-scheme")==="slate";
+  localStorage.setItem("macierze-scheme",dark?"light":"dark");
+  applyScheme();
+};
 
 function buildTabs(){
   $("tabs").innerHTML=PRODUCTS.map(p=>`<div class="tab ${p.key===state.prod&&!glob()?'on':''}" data-k="${p.key}">${esc(p.name)}<span class="c">${p.rows.length}</span></div>`).join('');
@@ -119,7 +323,7 @@ function match(r){
 function cell(r,k){
   if(k==='funkcjonalnosc'){const cmd=r.identyfikator_techniczny?`<div class="cmd">${esc(r.identyfikator_techniczny)}</div>`:'';return `<div class="fn">${esc(r.funkcjonalnosc)}</div><div class="sub">${esc(r.opis_biznesowy||r.opis||'')}</div>${cmd}`;}
   if(k==='typ'){return r.typ?`<span class="badge">${esc(r.typ)}</span>`:'';}
-  if(k==='dokumentacja'){return r.dokumentacja==='TAK'?'<span class="tag-dok">● TAK</span>':(r.dokumentacja==='NIE'?'<span class="tag-nie">○ NIE</span>':'');}
+  if(k==='dokumentacja'){return r.dokumentacja==='TAK'?'<span class="tag-dok" title="Udokumentowane w bazie wiedzy">● TAK</span>':(r.dokumentacja==='NIE'?'<span class="tag-nie" title="Brak dokumentacji w bazie wiedzy">○ NIE</span>':'');}
   if(k==='id_produktu'){return `<span class="idp">${esc(r.id_produktu||'')}</span>`;}
   if(k==='__p'){return `<span class="pbadge">${esc(r.__p)}</span>`;}
   return esc(r[k]||'');
@@ -129,9 +333,9 @@ function render(){
   if(state.sort.k){const k=state.sort.k,d=state.sort.dir;rows=rows.slice().sort((a,b)=>{let x=a[k]||'',y=b[k]||'';if(k==='liczba_projektow'){return ((+x||0)-(+y||0))*d;}return String(x).localeCompare(String(y),'pl')*d;});}
   $("thead").innerHTML="<tr>"+C.map(c=>`<th data-k="${c.k}">${esc(c.label)} <span class="arr">${state.sort.k===c.k?(state.sort.dir>0?'▲':'▼'):''}</span></th>`).join('')+"</tr>";
   document.querySelectorAll('thead th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;state.sort.dir=state.sort.k===k?-state.sort.dir:1;state.sort.k=k;render();});
-  $("tb").innerHTML=rows.map(r=>{const w=r.status==='do weryfikacji'?' class="weryf"':'';return `<tr${w}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;}).join('');
+  $("tb").innerHTML=rows.map(r=>{const w=r.status==='do weryfikacji'?' class="weryf" title="Status: do weryfikacji"':'';return `<tr${w}>`+C.map(c=>`<td>${cell(r,c.k)}</td>`).join('')+`</tr>`;}).join('');
   $("empty").style.display=rows.length?'none':'block';
-  $("count").textContent=`Wyświetlono ${rows.length} pozycji (${glob()?'wszystkie produkty':esc(cur().name)})`;
+  $("count").textContent=`Wyświetlono ${rows.length} pozycji (${glob()?'wszystkie produkty':cur().name})`;
 }
 function renderAll(){buildTabs();buildStats();buildControls();render();}
 $("q").addEventListener('input',e=>{state.q=e.target.value;renderAll();});

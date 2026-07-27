@@ -110,6 +110,39 @@ Do walidacji/odczytu plików **XLSX** dodatkowo: `pip install openpyxl==3.1.5`
 Szczegóły wdrożeniowe (przebudowa po zmianie danych, wariant z wolumenem, uwierzytelnianie,
 ścieżka bazowa) — patrz sekcja „Wdrożenie" poniżej i `docs/`.
 
+## Spójność wizualna z Bazą Wiedzy
+
+Strona jest celowo stylizowana na **Bazę Wiedzy GISPartner** (`demo.gispartner.pl/baza-wiedzy/`,
+MkDocs + Material 9), żeby przejście z bazy wiedzy do macierzy nie sprawiało wrażenia zmiany systemu.
+Przejęte tokeny:
+
+| Element | Wartość (identyczna jak w Bazie Wiedzy) |
+|---|---|
+| Kolor główny / nagłówek | `#4cae4f` |
+| Akcent | `#4287ff` |
+| Czcionki | Roboto + Roboto Mono |
+| Baza typograficzna | `html { font-size: 125% }` → 1rem = 20px |
+| Szerokość treści | `67.5rem` (1350px) |
+| Zaokrąglenia / cień | `.1rem` / `--md-shadow-z1` |
+| Tryb ciemny | schemat `slate`, jak w Material |
+
+Dodatkowo w nagłówku jest **link powrotny do Bazy Wiedzy** oraz przełącznik trybu jasny/ciemny
+(auto wg ustawień systemu, wybór zapamiętywany w `localStorage`).
+
+**Fonty są wbudowane w HTML jako data-URI** (`generator/templates/fonts/`, Apache 2.0) — wygląd jest
+identyczny jak w bazie wiedzy, ale strona nadal nie wykonuje **żadnych** wywołań sieciowych.
+Jedyny odnośnik zewnętrzny to link nawigacyjny powrotny, klikany świadomie przez użytkownika.
+
+**Znane odstępstwo od WCAG AA:** biały tekst na zieleni nagłówka daje kontrast 2,81:1 — to wartość
+odziedziczona wprost z Bazy Wiedzy (ten sam `#4cae4f`). Zmiana poprawiłaby dostępność, ale rozjechałaby
+nagłówek z bazą wiedzy. Pozostałe elementy spełniają AA (tekst tabeli 16:1, opisy i filtry 4,6:1,
+linki i statystyki 5,1:1). Zieleń użyta jako **tekst** na jasnym tle to ciemniejszy wariant
+(`#2e7d32`) właśnie po to, by trzymać AA.
+
+**Rekomendacja wdrożeniowa:** największy zysk dla wrażenia spójności da wystawienie macierzy pod tą samą
+domeną (np. `demo.gispartner.pl/macierze/`) przez reverse proxy — użytkownik nie zobaczy zmiany adresu,
+a kontener pozostaje osobny.
+
 ## CI (GitHub Actions)
 
 Workflow `.github/workflows/build.yml` uruchamia się przy zmianie `dane/**`, `generator/**`, `nginx/**`,
