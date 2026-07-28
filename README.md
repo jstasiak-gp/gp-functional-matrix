@@ -10,15 +10,36 @@ Repozytorium łączy dwie rzeczy:
 
 > **Repozytorium wewnętrzne.** Macierze zawierają nazwy projektów i klientów — nie publikować poza organizacją.
 
-## Szybki start — uruchom stronę
+---
+
+## Dwie rzeczy, które trzeba wiedzieć
+
+**1. Uruchomienie strony — jedna komenda:**
 
 ```bash
 docker compose up -d --build
 ```
 
-→ http://localhost:8080
+→ otwórz **http://localhost:8080** · zatrzymanie: `docker compose down` · skróty: `make help`
 
-Zatrzymanie: `docker compose down`. Skróty: `make help`.
+**2. Dodanie nowego produktu = edycja `dane/produkty.yaml`, NIE kodu.**
+
+Generator czyta listę produktów wyłącznie z tego manifestu. Nie trzeba nic zmieniać w Pythonie:
+
+```yaml
+produkty:
+  - nazwa: NowyProdukt          # nazwa na zakładce
+    klucz: nowyprodukt          # slug [a-z0-9_-], używany w nazwach eksportu
+    prefiks: NPR                # prefiks ID produktowego
+    plik_csv: macierz_NowyProdukt.csv   # plik w dane/produkty/
+    profil: null                # albo nazwa pliku z dane/profile/
+    poziom1_label: Obszar       # etykieta kolumny „Poziom 1" (np. Moduł)
+```
+
+Wrzuć CSV (i XLSX obok) do `dane/produkty/`, dopisz pozycję wyżej, przebuduj:
+`docker compose up -d --build`. Tyle.
+
+---
 
 ## Struktura
 
